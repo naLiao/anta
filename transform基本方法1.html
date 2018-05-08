@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <title>Title</title>
+    <style>
+        #box{
+            width: 100px;
+            height: 100px;
+            border:solid 1px #000;
+            padding:50px;
+            perspective: 100px;
+        }
+        #div{
+            width: 100px;
+            height: 100px;
+            background:red;
+            transition:.8s;
+            transform-origin: left center;
+        }
+    </style>
+</head>
+<body>
+<div id="box">
+    <div id="div"></div>
+</div>
+<script>
+    //移动端没有hover效果，没有鼠标事件?
+
+    /*
+    旋转rotate
+    单位是deg，角度
+    rotateX rotateY rotateZ(默认)
+    围绕中心点
+
+    斜切skew
+    skewX(默认) skewY
+    正值 拉左上和右下角
+    负值 拉右上和左下角
+    围绕中心点
+
+    缩放scale
+    scaleX scaleY scaleX+scaleY(默认)
+    围绕中心点
+
+    位移translate
+    translateX translateY translateZ
+    正值向右、向下
+    负值向左、向上
+    Z轴移动感觉上会放大缩小，实际上是距离改变
+    不受变化原点影响，不会改变变化原点
+
+    多条样式执行顺序问题：
+    先写的后执行
+
+    景深：persepective
+    景深要加在父级上
+
+    变化原点：
+    transform-origin
+    关键字:left right center top bottom
+    长度单位：(px,rem,em...)
+    3D下的变化原点：三个参数
+    比如：center center -50px
+    */
+    let div = document.getElementById('div');
+    div.addEventListener('touchend',function(ev) {
+        // div.style.WebkitTransform = div.style.transform = 'rotateX(60deg)';
+        // div.style.WebkitTransform = div.style.transform = 'skew(60deg)';
+        // div.style.WebkitTransform = div.style.transform = 'skewY(60deg)';
+        // div.style.WebkitTransform = div.style.transform = 'translate(50px) scale(0.5)';
+        // div.style.WebkitTransform = div.style.transform = 'scale(0.5) translate(50px)';  //先位移50，再缩放0.5，会将位移值也缩放，缩放成25，所以移动距离会短
+        // div.style.WebkitTransform = div.style.transform = 'translate(50px) rotate(180deg)';
+        // div.style.WebkitTransform = div.style.transform = 'rotate(180deg) translate(50px)';
+        div.style.WebkitTransform = div.style.transform = 'rotate(180deg)';
+    });
+</script>
+</body>
+</html>
