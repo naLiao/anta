@@ -1,0 +1,165 @@
+/*移动端css reset*/
+@r:50rem;
+a,
+input,
+button {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+input,
+button {
+  -webkit-appearance: none;
+  border-radius: 0;
+}
+body {
+  margin: 0;
+  -webkit-user-select: none;
+}
+body * {
+  -webkit-user-select: none;
+  font-family: Helvetica;
+}
+body {
+  -webkit-text-size-adjust: 100%;
+}
+li{
+  list-style: none;
+}
+body,h1,ul{
+  margin: 0;
+  padding: 0;
+}
+a{
+  text-decoration: none;
+}
+img{
+  vertical-align: top;
+}
+html,
+body{
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+#header{
+  width: 750/@r;
+  height: 103/@r;
+  background: #ef3239;
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-bottom: solid 1px #a82d31;
+  box-sizing: border-box;
+  a{
+    width: 128/@r;
+    height: 88/@r;
+    position: absolute;
+    top: 0;
+    text-align: center;
+    line-height: 88/@r;
+  }
+  #task{
+    left: 0;
+    font-size: 36/@r;
+  }
+  #refresh{
+    right:0;
+    font-size: 36/@r;
+  }
+  span{
+    color: #fff;
+  }
+  h1{
+    text-align: center;
+    font-size: 40/@r;
+    color: #fff;
+    line-height: 88/@r;
+    span{
+      font-size: 26/@r;
+      margin-right: 16/@r;
+    }
+  }
+}
+
+#nav{
+  height: 105/@r;
+  width: 750/@r;
+  position: absolute;
+  left: 0;
+  top: 103/@r;
+  background: #fdfdfd;
+  border-top: solid 1px #b0b0b0;
+  border-bottom: solid 1px #ccc;
+  box-sizing: border-box;
+  a{
+    float: left;
+    width: 25%;
+    height: 103@r;
+    text-align: center;
+    line-height: 103/@r;
+    color: #848689;
+    font-size: 35/@r;
+    #spanBox{
+      width: 37/@r;
+      display: inline-block;
+      vertical-align: middle;
+      span{
+        float: left;
+        font-size: 28/@r;
+      }
+    }
+  }
+}
+
+.active{
+  color: #f23838 !important;
+}
+
+#warp{
+  position: absolute;
+  top: 208/@r;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: auto;
+}
+#list{
+  li{
+    height: 281/@r;
+    border-bottom: solid 1px #e0e0e0;
+    box-sizing: border-box;
+  }
+  a{
+    display: block;
+    padding: 22/@r;
+    height: 235/@r;
+  }
+  img{
+    float: left;
+    width: 235/@r;
+    height: 235/@r;
+  }
+  .spanWarp{
+    float: right;
+    width: 432/@r;
+  }
+  .sTitle{
+    font-size: 28/@r;
+    line-height: 44/@r;
+    color: #333;
+    margin-top: 5/@r;
+    display: block;
+  }
+  .sPrice{
+    display: block;
+    font-size: 38/@r;
+    line-height: 64/@r;
+    margin-top: 31/@r;
+    color: #f23838;
+  }
+  .sComment{
+    font-size: 28/@r;
+    line-height: 47/@r;
+    display: block;
+    color: #808080;
+  }
+}
