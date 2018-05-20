@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        #box{
+            width: 2px;
+            height: 2px;
+            background: blue;
+            position: relative;
+            margin: 200px auto;
+            z-index: 11;
+        }
+        #box div{
+            width: 100px;
+            height: 2px;
+            background: red;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            margin: 0 0 0 -50px;
+        }
+        /*方法一：先位移，再旋转*/
+        /*#box div:nth-child(1){*/
+            /*transform: rotate(0deg) translateY(87px);*/
+        /*}*/
+        /*#box div:nth-child(2){*/
+            /*transform: rotate(60deg) translateY(87px);*/
+        /*}*/
+        /*#box div:nth-child(3){*/
+            /*transform: rotate(120deg) translateY(87px);*/
+        /*}*/
+        /*#box div:nth-child(4){*/
+            /*transform: rotate(180deg) translateY(87px);*/
+        /*}*/
+        /*#box div:nth-child(5){*/
+            /*transform: rotate(240deg) translateY(87px);*/
+        /*}*/
+        /*#box div:nth-child(6){*/
+            /*transform: rotate(300deg) translateY(87px);*/
+        /*}*/
+        /*方法二：先旋转，再位移*/
+        /*#box div:nth-child(1){*/
+        /*transform: translate(0px,-87px) rotate(0deg);*/
+        /*}*/
+        /*#box div:nth-child(2){*/
+        /*transform: translate(75px,-43px) rotate(60deg);*/
+        /*}*/
+        /*#box div:nth-child(3){*/
+        /*transform: translate(75px,43px) rotate(120deg);*/
+        /*}*/
+        /*#box div:nth-child(4){*/
+        /*transform: translate(0px,87px) rotate(180deg);*/
+        /*}*/
+        /*#box div:nth-child(5){*/
+        /*transform: translate(-75px,43px) rotate(240deg);*/
+        /*}*/
+        /*#box div:nth-child(6){*/
+        /*transform: translate(-75px,-43px) rotate(300deg);*/
+        /*}*/
+    </style>
+</head>
+<body>
+    <div id="box">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+    <script src="anta/js/m.Tween.js"></script>
+    <script>
+        // console.log(Math.sin(60*Math.PI/180)*87);
+        //用js计算
+        window.onload = function () {
+            const divs = document.querySelectorAll('#box div');
+            let deg = 360 / divs.length;  //60deg
+            let width = divs[0].offsetWidth;
+            let R = Math.round(Math.tan(deg*Math.PI/180)*(width/2));
+            for(let i=0;i<divs.length;i++){
+                let divDeg = i*deg;
+                let x = Math.sin(divDeg*Math.PI/180)*R;
+                let y = Math.cos(divDeg*Math.PI/180)*R;
+                cssTransform(divs[i],'translateX',x);
+                cssTransform(divs[i],'translateY',y);
+                css(divs[i],'rotate',-divDeg);
+            }
+        }
+    </script>
+</body>
+</html>
