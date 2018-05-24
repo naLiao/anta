@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        @keyframes rotateY1 {
+            0%{
+                transform: rotateY(0deg);
+              }
+            100%{
+                transform: rotateY(360deg);
+            }
+        }
+        html,
+        body{
+            height: 100%;
+            overflow: hidden;
+        }
+        #view{
+            width: 0;
+            height: 0;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            -webkit-perspective: 300px;
+            perspective: 300px;
+        }
+        #box{
+            width: 2px;
+            height: 2px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 11;
+            -webkit-transform-style: preserve-3d;
+            transform-style: preserve-3d;
+            animation: 3s rotateY1 linear infinite;
+        }
+        #box div{
+            width: 100px;
+            height: 200px;
+            margin: -100px 0 0 -50px;
+            font-size: 50px;
+            color: #fff;
+            text-align: center;
+            line-height: 200px;
+            position: absolute;
+        }
+        #box div:nth-child(2n){
+            background: red;
+        }
+        #box div:nth-child(2n-1){
+            background: green;
+        }
+        /*#box div:nth-child(1){*/
+            /*transform: rotateY(0deg) translateZ(87px);*/
+        /*}*/
+        /*#box div:nth-child(2){*/
+            /*transform: rotateY(60deg) translateZ(87px);*/
+        /*}*/
+        /*#box div:nth-child(3){*/
+            /*transform: rotateY(120deg) translateZ(87px);*/
+        /*}*/
+        /*#box div:nth-child(4){*/
+            /*transform: rotateY(180deg) translateZ(87px);*/
+        /*}*/
+        /*#box div:nth-child(5){*/
+            /*transform: rotateY(240deg) translateZ(87px);*/
+        /*}*/
+        /*#box div:nth-child(6){*/
+            /*transform: rotateY(300deg) translateZ(87px);*/
+        /*}*/
+    </style>
+</head>
+<body>
+<div id="view">
+    <div id="box">
+        <div>1</div>
+        <div>2</div>
+        <div>3</div>
+        <div>4</div>
+        <div>5</div>
+        <div>6</div>
+        <div>7</div>
+        <div>8</div>
+        <div>9</div>
+        <div>10</div>
+        <div>11</div>
+        <div>12</div>
+    </div>
+</div>
+<script src="anta/js/m.Tween.js"></script>
+<script>
+    window.onload = function () {
+        const divs = document.querySelectorAll('#box div');
+        let deg = 360 / divs.length;  //外角60deg
+        let innerDeg = (180-deg)/2;  //内角
+        let width = divs[0].offsetWidth;
+        let R = Math.round(Math.tan(innerDeg*Math.PI/180)*(width/2));
+        for(let i=0;i<divs.length;i++){
+            cssTransform(divs[i],'rotateY',deg*i);
+            cssTransform(divs[i],'translateZ',R);
+        }
+    }
+</script>
+</body>
+</html>

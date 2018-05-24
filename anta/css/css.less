@@ -59,6 +59,7 @@ html,body{
     left: 35%;
     img{
       width: 30%;
+      -webkit-animation: 2s loading linear infinite;
       animation: 2s loading linear infinite;
     }
   }
@@ -68,4 +69,71 @@ html,body{
     top: 60%;
     text-align: center;
   }
+  #logo4,#logo4Box{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+    span{
+      position: absolute;
+      float: left;
+      width: 30px;
+      height: 30px;
+      top: 50%;
+      left: 50%;
+      background: center center no-repeat;
+      background-size: contain;
+    }
+  }
+}
+
+#logo4Box{
+  -webkit-animation: 2s loading linear infinite;
+  animation: 2s loading linear infinite;
+}
+
+#logo4Img{
+  width: 196px;
+  height: 70px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin:-35px 0 0 -98px;
+}
+#main,
+#translateZ,
+#bgSpanBox,
+#cloud{
+  position: absolute;
+  width: 0;
+  height: 0;
+  top: 50%;
+  left: 50%;
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+}
+
+#bgSpanBox{
+  background: url('../bg/bg.jpg') center center no-repeat;
+  background-size: 100% 100%;
+  span{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 129px;
+    height: 1170px;
+    margin: -585px 0 0 -64.5px;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+}
+
+#cloud span{
+  width: 200px;
+  height: 100px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: -50px 0 0 -100px;
 }

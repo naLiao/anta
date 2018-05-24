@@ -15,7 +15,7 @@ var imgData = {
 		"load/loadIco8.png",
 		"load/loadIco9.png"
 	],
-	clound:[
+	cloud:[
 		"bg/cloud1.png",
 		"bg/cloud2.png",
 		"bg/cloud3.png"
