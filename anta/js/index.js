@@ -247,14 +247,22 @@ function anmt7() {
         css(span,'translateX',x);
         css(span,'translateY',y);
     }
-
     //云朵旋转
     MTween({
         el:cloud,
-        target:{rotateY:25},
+        target:{rotateY:360},
         time:3600,
         type:'linear',
-        callBack:drag
+        callIn:function () {
+            let deg = css(cloud,'rotateY');
+            for(let i=0;i<cloud.children.length;i++){
+                MTween({
+                    el:cloud.children[i],
+                    target:{rotateY:-deg},
+                    time:1
+                })
+            }
+        }
     })
 }
 
@@ -273,7 +281,7 @@ function drag() {
     bgSpanBox.addEventListener('touchstart',start);
     bgSpanBox.addEventListener('touchmove',move);
     bgSpanBox.addEventListener('touchend',end);
-    
+
     function start(ev) {
         origin.x = ev.changedTouches[0].pageX;  //初始位置
         origin.y = ev.changedTouches[0].pageY;
