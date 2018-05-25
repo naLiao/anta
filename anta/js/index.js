@@ -1,9 +1,10 @@
 //图片预加载
 (function () {
     // loading();
-    anmt7();
+    anmt4();
 })();
 
+//loading红色logo旋转
 function loading() {
     const logoText = document.querySelector('.logoText');
     let imgAll = [];
@@ -26,7 +27,7 @@ function loading() {
     }
 }
 
-//anmt1:隐藏logo1，显示logo2
+//anmt1:隐藏红色logo，显示橙色logo
 function anmt1() {
     const view = document.getElementById('view');
     const logo1 = document.getElementById('logo1');
@@ -43,8 +44,8 @@ function anmt1() {
     div3.appendChild(img3);
     view.appendChild(div2);
     view.appendChild(div3);  //同时创建logo2和logo3，让旋转能同步
-    cssTransform(logo2,'translateZ',-1000);
-    cssTransform(logo3,'translateZ',-1000);
+    cssTransform(logo2,'translateZ',-2000);
+    cssTransform(logo3,'translateZ',-2000);
     css(logo2,'opacity',0);
     css(logo3,'opacity',0);
     MTween({
@@ -57,8 +58,8 @@ function anmt1() {
             css(logo2,'opacity',100);
             MTween({
                 el:logo2,
-                target:{translateZ:30},
-                time:100,
+                target:{translateZ:0},
+                time:160,
                 type:'linear',  //让logo2从后往前
                 callBack: anmt2
             })
@@ -66,55 +67,57 @@ function anmt1() {
     })
 }
 
-//anmt2：隐藏logo2，显示logo3
+//anmt2：隐藏橙色logo，显示蓝色logo
 function anmt2() {
     let logo2 = document.querySelector('#logo2');
     let logo3 = document.querySelector('#logo3');
     setTimeout(function () {  //让logo2停留2秒后执行
         logo2Tologo3();
-    },2000);
+    },1500);
 
     function logo2Tologo3() {
         MTween({
             el:logo2,
-            target:{translateZ:-1000},
+            target:{translateZ:-2000},
             time:800,
             type:'easeIn',
             callBack: function () {
                 view.removeChild(logo2);
-                css(logo3,'opacity',100);  //显示logo3
+                css(logo3,'opacity',100);  //显示蓝色logo
                 setTimeout(function (args) {
                     MTween({
                         el:logo3,
-                        target:{translateZ:30},
+                        target:{translateZ:0},
                         time:100,
                         type:'linear',  //让logo3从后往前走
-                        callback:anmt3
+                        callBack:anmt3
                     })
-                },300)
+                },500)
             }
         })
     }
 }
 
-//隐藏logo3
+//隐藏蓝色logo
 function anmt3() {
     let logo3 = document.querySelector('#logo3');
-    MTween({
-        el:logo3,
-        target:{translateZ:-1000},
-        time:800,
-        type:'easeIn',
-        callBack: function () {
-            view.removeChild(logo3);
-            anmt4;
-        }
-    })
+    setTimeout(function () {
+        MTween({
+            el:logo3,
+            target:{translateZ:-2000},
+            time:800,
+            type:'easeIn',
+            callBack: function () {
+                view.removeChild(logo3);
+                anmt4();
+            }
+        })
+    },2000)
 }
 
 //显示爆炸效果，隐藏爆炸效果
 function anmt4() {
-    //生成logo4，内有logo4Img：主logo；logo4Box：内放旋转小图
+    //生成爆炸logo，内有logo4Img：主logo；logo4Box：内放旋转小图
     let view = document.getElementById('view');
     let logo4 = document.createElement('div');
     let logo4Img = new Image();
@@ -146,37 +149,40 @@ function anmt4() {
     logo4.append(logo4Box);
     view.appendChild(logo4);
 
-    //logo4从远到近，再收回
+    //爆炸logo运动从远到近，再收回
     css(logo4,'translateZ',-2000);
-    MTween({
-        el:logo4,
-        target:{translateZ:0},
-        time:500,
-        type:'easeIn',
-        callBack: function () {
-            setTimeout(function () {
-                MTween({
-                    el:logo4,
-                    target:{translateZ:-1000,scale:10},
-                    time:500,
-                    type:'easeIn',
-                    callBack: function () {
-                        view.removeChild(logo4);
-                        anmt6();
-                    }
-                })
-            },1000);
-            anmt5();
-        }
-    })
+    setTimeout(function () {
+        MTween({
+            el:logo4,
+            target:{translateZ:0},
+            time:400,
+            type:'easeIn',
+            callBack: function () {
+                setTimeout(function () {
+                    MTween({
+                        el:logo4,
+                        target:{translateZ:-1000,scale:10},
+                        time:700,
+                        type:'easeIn',
+                        callBack: function () {
+                            view.removeChild(logo4);
+                            setTimeout(function () {
+                                anmt5();
+                            },200)
+                        }
+                    })
+                },2000);  //爆炸logo停留时间
+            }
+        })
+    },100)  //爆炸logo等待一会再向前冲
 }
 
 //云彩入场，圆柱旋转入场，整体从远到近
 function anmt5() {
     let translateZ = document.getElementById('translateZ');  //translateZ控制整体的Z轴位置
     css(translateZ,'translateZ',-2000);
-    anmt7();
-    anmt6();
+    anmt7();  //时间3600
+    anmt6();  //时间3600
     MTween({
         el:translateZ,
         target:{translateZ:200},
@@ -188,22 +194,21 @@ function anmt5() {
 //主体圆柱入场
 function anmt6() {
     let bgSpanBox= document.getElementById('bgSpanBox');
-    let len = imgData.bg.length;
     let startDeg = 180;
     let width = 129/2;
-    let spanDeg = (180-(360/len))/2;  //内角
+    let spanDeg = (180-(360/imgData.bg.length))/2;  //内角
     let R = Math.floor(Math.tan(spanDeg*Math.PI/180)*width)-1;
     css(bgSpanBox,'rotateY',-695);  //圆柱初始角度
 
     //生成20个块拼成一个圆柱
-    for(let i=0;i<len;i++){
+    for(let i=0;i<imgData.bg.length;i++){
         let span = document.createElement('span');
         css(span,'rotateY',startDeg);
         css(span,'translateZ',-R);
         span.style.backgroundImage = 'url('+imgData.bg[i]+')';
         span.style.opacity = 0;
         bgSpanBox.appendChild(span);
-        startDeg -= (360/len);
+        startDeg -= (360/imgData.bg.length);
     }
 
     //背景一块一块出现
@@ -211,7 +216,7 @@ function anmt6() {
     let timer = setInterval(function () {
         bgSpanBox.children[num].style.opacity = 100;
         num++;
-        if(num>=len){
+        if(num>=bgSpanBox.children.length){
             clearInterval(timer);
         }
     },90)
@@ -229,7 +234,7 @@ function anmt6() {
 //云朵入场
 function anmt7() {
     const cloud = document.getElementById('cloud');
-    css(cloud,'translateZ',-200);
+    css(cloud,'translateZ',-400);
     css(cloud,'rotateY',0);
     //生成云朵并围成圆柱
     for(let i=0;i<9;i++){
@@ -246,22 +251,34 @@ function anmt7() {
         css(span,'translateZ',z);
         css(span,'translateX',x);
         css(span,'translateY',y);
+        css(span,'opacity',0);
     }
+
+    //云朵一块一块出现
+    let num = 0;
+    let timer = setInterval(function () {
+        cloud.children[num].style.opacity = 100;
+        num++;
+        if(num>=cloud.children.length){
+            clearInterval(timer);
+        }
+    },100)
+
     //云朵旋转
     MTween({
         el:cloud,
-        target:{rotateY:360},
+        target:{rotateY:540},
         time:3600,
-        type:'linear',
+        type:'easeOut',
         callIn:function () {
             let deg = css(cloud,'rotateY');
             for(let i=0;i<cloud.children.length;i++){
-                MTween({
-                    el:cloud.children[i],
-                    target:{rotateY:-deg},
-                    time:1
-                })
+                css(cloud.children[i],'rotateY',-deg);  //让云朵同步反方向旋转，始终正面对外
             }
+        },
+        callBack:function () {
+            cloud.parentNode.removeChild(cloud);  //云朵旋转完成后就消失，进入主画面
+            redBgAppear();
         }
     })
 }
@@ -335,5 +352,6 @@ function drag() {
 
 //背景出现
 function redBgAppear() {
-
+    const redBg = document.getElementById('redBg');
+    redBg.style.display = 'block';
 }
