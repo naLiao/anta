@@ -104,20 +104,17 @@ html,body{
 #main,
 #translateZ,
 #bgSpanBox,
-#cloud{
+#cloud,
+#panoBox,
+.pano{
   position: absolute;
-  width: 0;
-  height: 0;
   top: 50%;
   left: 50%;
   -webkit-transform-style: preserve-3d;
   transform-style: preserve-3d;
 }
 
-#bgSpanBox{
-  background: url('../bg/bg.jpg') center center no-repeat;
-  background-size: 100% 100%;
-  span{
+#bgSpanBox span{
     position: absolute;
     top: 0;
     left: 0;
@@ -126,7 +123,16 @@ html,body{
     margin: -585px 0 0 -64.5px;
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
-  }
+}
+
+.pano span{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 129px;
+  margin-left: -64.5px;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 #cloud span{

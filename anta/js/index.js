@@ -1,7 +1,7 @@
 //图片预加载
 (function () {
     // loading();
-    anmt4();
+    anmt5();
 })();
 
 //loading红色logo旋转
@@ -177,12 +177,13 @@ function anmt4() {
     },100)  //爆炸logo等待一会再向前冲
 }
 
-//云彩入场，圆柱旋转入场，整体从远到近
+//执行动画6、7，整体从远到近
 function anmt5() {
     let translateZ = document.getElementById('translateZ');  //translateZ控制整体的Z轴位置
     css(translateZ,'translateZ',-2000);
     anmt7();  //时间3600
     anmt6();  //时间3600
+    floatAppear();
     MTween({
         el:translateZ,
         target:{translateZ:200},
@@ -198,6 +199,7 @@ function anmt6() {
     let width = 129/2;
     let spanDeg = (180-(360/imgData.bg.length))/2;  //内角
     let R = Math.floor(Math.tan(spanDeg*Math.PI/180)*width)-1;
+    css(bgSpanBox,'rotateX',0);  //一般必须先设置X方向再设置y方向，否则X方向会有点偏移
     css(bgSpanBox,'rotateY',-695);  //圆柱初始角度
 
     //生成20个块拼成一个圆柱
@@ -283,21 +285,26 @@ function anmt7() {
     })
 }
 
-//左右拖拽圆柱旋转对应角度
+//左右、上下拖拽圆柱、漂浮层旋转对应角度
 function drag() {
+    let bgSpanBox = document.querySelector('#bgSpanBox');
+    let panoBox = document.querySelector('#panoBox');
+
     let translateZ = document.querySelector('#translateZ');
     let startZ = css(translateZ,'translateZ');
-    // console.log(startZ);
-    let bgSpanBox = document.querySelector('#bgSpanBox');
     let origin = {x:0,y:0};
     let originDeg = {x:0,y:0};
-    let scale = {x:18/129,y:80/1170};
+    let scale = {x:18/129,y:60/1170};  //一个图片宽129，对应18deg，高1170，对应90
     let lastDegDis = {x:0,y:0};
     let lastDeg = {x:0,y:0};
 
     bgSpanBox.addEventListener('touchstart',start);
     bgSpanBox.addEventListener('touchmove',move);
     bgSpanBox.addEventListener('touchend',end);
+
+    panoBox.addEventListener('touchstart',start);
+    panoBox.addEventListener('touchmove',move);
+    panoBox.addEventListener('touchend',end);
 
     function start(ev) {
         origin.x = ev.changedTouches[0].pageX;  //初始位置
@@ -307,29 +314,39 @@ function drag() {
     }
     function move(ev) {
         let dis = {};
-        let nowdeg = {};
+        let nowdeg = {};  //圆柱旋转到的角度
+        let nowdeg2 = {};  //漂浮层旋转到的角度
         dis['x'] = ev.changedTouches[0].pageX - origin.x;  //移动的距离
         dis['y'] = ev.changedTouches[0].pageY - origin.y;
-        // console.log(dis);
-        nowdeg['x'] = originDeg.x-dis.x*scale.x;  //水平方向应该旋转到的角度
-        nowdeg['y'] = originDeg.y+dis.y*scale.y;  //竖直方向应该旋转到的角度
+
+        nowdeg.x = originDeg.x-dis.x*scale.x;  //水平方向应该旋转到的角度
+        nowdeg.y = originDeg.y+dis.y*scale.y;  //竖直方向应该旋转到的角度
         if(nowdeg.y>40){
             nowdeg.y = 40;
         }else if(nowdeg.y<-40){  //控制y轴移动角度不要太多
             nowdeg.y = -40;
         }
+        nowdeg2.x = originDeg.x-dis.x*scale.x*0.95;
+        nowdeg2.y = originDeg.y+dis.y*scale.y*0.95;
+        if(nowdeg2.y>40){
+            nowdeg2.y = 40;
+        }else if(nowdeg2.y<-40){  //控制y轴移动角度不要太多
+            nowdeg2.y = -40;
+        }
+        console.log(nowdeg,nowdeg2);
 
         lastDegDis.x = nowdeg.x - lastDeg.x;
         lastDegDis.y = nowdeg.y - lastDeg.y;
         lastDeg.x = nowdeg.x;
         lastDeg.y = nowdeg.y;
-        // console.log(lastDegDis);
 
         css(bgSpanBox,'rotateY',nowdeg.x);
         css(bgSpanBox,'rotateX',nowdeg.y);
+        css(panoBox,'rotateY',nowdeg2.x);
+        css(panoBox,'rotateX',nowdeg2.y);
 
         //回弹效果，move时往后移动，移动距离与手指滑动距离相关，左滑右滑都是向后移动，所以减去绝对值
-        let zMove = Math.min(Math.abs(dis.x),400);
+        let zMove = Math.min(Math.abs(dis.x),300);
         css(translateZ,'translateZ',startZ-zMove);
     }
     function end(ev) {
@@ -337,13 +354,19 @@ function drag() {
         MTween({
             el:bgSpanBox,
             target:{rotateY:nowDeg.x+lastDegDis.x*10,rotateX:nowDeg.y+lastDegDis.y*10},
-            time:200,
+            time:800,
             type:'easeOut'
-        })
+        });
+        MTween({
+            el:panoBox,
+            target:{rotateY:nowDeg.x+lastDegDis.x*10,rotateX:nowDeg.y+lastDegDis.y*10},
+            time:800,
+            type:'easeOut'
+        });
         MTween({
             el:translateZ,
             target:{translateZ: startZ},
-            time:500,
+            time:800,
             type:'easeOut'
         })
 
@@ -355,3 +378,55 @@ function redBgAppear() {
     const redBg = document.getElementById('redBg');
     redBg.style.display = 'block';
 }
+
+//漂浮层出现
+function floatAppear() {
+    const panoBox = document.getElementById('panoBox');
+
+    css(panoBox,'rotateX',0);  //必须设置
+    css(panoBox,'rotateY',-180);
+    css(panoBox,'scale',0);
+
+    let startDeg = 180;
+    let R = 406;
+    let num = 0;
+
+    //pano1是一个小圆柱
+    creatPano(2,1.564,-163,-9.877,180,344);
+    creatPano(3,20.225,278,-14.695,144,326);
+    creatPano(4,22.275,192.5,-11.35,90,195);
+    creatPano(5,20.225,129,14.695,90,468);
+    creatPano(6,-11.35,256,22.275,18,582);
+    creatPano(6,-4.54,-13,8.91,18,444);
+    creatPano(3,-11,150,-26.877,-118,522);
+    creatPano(6,-24.436,60,0,-80,421);
+
+    setTimeout(function () {
+        MTween({
+            el:panoBox,
+            target:{rotateY:25,scale:100},
+            time:1200,
+            type:'easeBoth'
+        })
+    },2800)
+
+    function creatPano(count,x,y,z,startDeg,height) {
+        let div = document.createElement('div');
+        div.className = 'pano';
+        css(div,"translateX",x);
+        css(div,"translateY",y);
+        css(div,"translateZ",z);
+        for(let i=0;i<count;i++){
+            let span = document.createElement('span');
+            span.style.cssText = `height:${height}px; margin-top:${-height/2}px`;
+            span.style.background = 'url('+ imgData.pano[num] +')';
+            num++;
+            css(span,'rotateY',startDeg);
+            css(span,'translateZ',-406);
+            div.appendChild(span);
+            startDeg -= 18;
+        }
+        panoBox.appendChild(div);
+    }
+}
+
