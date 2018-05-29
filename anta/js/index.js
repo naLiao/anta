@@ -1,7 +1,7 @@
 //图片预加载
 (function () {
-    // loading();
-    anmt5();
+    loading();
+    // anmt5();
 })();
 
 //loading红色logo旋转
@@ -229,7 +229,10 @@ function anmt6() {
         target:{rotateY:25},
         time:3600,
         type:'linear',
-        callBack:drag
+        callBack:function(){
+            setdrag();
+            setSensors();
+        }
     })
 }
 
@@ -286,7 +289,7 @@ function anmt7() {
 }
 
 //左右、上下拖拽圆柱、漂浮层旋转对应角度
-function drag() {
+function setdrag() {
     let bgSpanBox = document.querySelector('#bgSpanBox');
     let panoBox = document.querySelector('#panoBox');
 
@@ -307,6 +310,7 @@ function drag() {
     panoBox.addEventListener('touchend',end);
 
     function start(ev) {
+        window.isTouch = true;  //开始手指拖拽的时候不让陀螺仪旋转
         origin.x = ev.changedTouches[0].pageX;  //初始位置
         origin.y = ev.changedTouches[0].pageY;
         originDeg.x = css(bgSpanBox,'rotateY');  //初始旋转角度
@@ -355,7 +359,10 @@ function drag() {
             el:bgSpanBox,
             target:{rotateY:nowDeg.x+lastDegDis.x*10,rotateX:nowDeg.y+lastDegDis.y*10},
             time:800,
-            type:'easeOut'
+            type:'easeOut',
+            callBack:function () {
+                window.isTouch = false;
+            }
         });
         MTween({
             el:panoBox,
@@ -366,11 +373,61 @@ function drag() {
         MTween({
             el:translateZ,
             target:{translateZ: startZ},
-            time:800,
+            time:700,
             type:'easeOut'
         })
 
     }
+}
+
+//陀螺仪
+function setSensors() {
+    let bgSpanBox = document.querySelector('#bgSpanBox');
+    let panoBox = document.querySelector('#panoBox');
+
+    let isStart = true;
+    let lastX = 0;
+    let lastY = 0;
+    let startDeg = {};
+    let initElDeg = {};
+
+    window.addEventListener('deviceorientation',function (ev) {
+        if(window.isTouch) return;
+        let x = ev.beta;
+        let y = ev.gamma;
+        if(isStart){
+            //start
+            initElDeg.x = css(bgSpanBox,'rotateX');
+            initElDeg.y = css(bgSpanBox,'rotateY');
+            startDeg.x = x;
+            startDeg.y = y;
+            isStart = false;
+        }else{
+            //move
+            if(Math.abs(x-lastX)>1 || Math.abs(y-lastY)>1){
+                let dis = {};
+                dis.x = x - startDeg.x;
+                dis.y = y -startDeg.y;
+
+                let degTo = {};
+                degTo.x = initElDeg.x+dis.x;
+                degTo.y = initElDeg.y+dis.y;
+                if(degTo.x>45){
+                    degTo.x = 45;
+                }else if(degTo.x<-45){
+                    degTo.x = -45;
+                }
+
+                css(bgSpanBox,'rotateX',degTo.x);
+                css(bgSpanBox,'rotateY',degTo.y);
+                css(panoBox,'rotateX',degTo.x);
+                css(panoBox,'rotateY',degTo.y);
+
+                lastX = x;
+                lastY = y;
+            }
+        }
+    })
 }
 
 //背景出现
