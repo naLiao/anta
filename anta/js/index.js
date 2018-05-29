@@ -1,8 +1,30 @@
 //图片预加载
 (function () {
-    loading();
-    // anmt5();
+    // loading();
+    anmt5();
+    setPres();
 })();
+
+//阻止橡皮筋效果
+document.addEventListener('touchstart', function (e) {
+    e.preventDefault();
+}, {passive: false});  //passive 参数不能省略，用来兼容ios和android
+
+//计算景深
+function setPres() {
+    resetView();
+    window.onresize = resetView;
+
+    function resetView(ev) {
+        const view = document.getElementById('view');
+        const main = document.getElementById('main');
+        let deg = 52.5;
+        let height = document.documentElement.clientHeight;
+        let pers = Math.round(Math.tan(deg*Math.PI/180)*height/2);
+        view.style.WebkitPerspective = view.style.perspective = pers + 'px';
+        css(main,'translateZ',pers);
+    }
+}
 
 //loading红色logo旋转
 function loading() {
@@ -179,17 +201,17 @@ function anmt4() {
 
 //执行动画6、7，整体从远到近
 function anmt5() {
-    let translateZ = document.getElementById('translateZ');  //translateZ控制整体的Z轴位置
-    css(translateZ,'translateZ',-2000);
-    anmt7();  //时间3600
-    anmt6();  //时间3600
-    floatAppear();
+    let tZ = document.getElementById('tZ');  //tZ控制整体的Z轴位置
+    css(tZ,'translateZ',-2000);
+    anmt7();  //2800云朵出场
+    anmt6();  //3600圆柱出场
+    floatAppear();  //3600漂浮层出场
     MTween({
-        el:translateZ,
-        target:{translateZ:200},
+        el:tZ,
+        target:{translateZ:-160},
         time:3600,
         type:'easeBoth'
-    })
+    });
 }
 
 //主体圆柱入场
@@ -231,7 +253,10 @@ function anmt6() {
         type:'linear',
         callBack:function(){
             setdrag();
-            setSensors();
+            setTimeout(function () {
+                window.isStart = true;
+                setSensors();
+            },1000)
         }
     })
 }
@@ -239,7 +264,7 @@ function anmt6() {
 //云朵入场
 function anmt7() {
     const cloud = document.getElementById('cloud');
-    css(cloud,'translateZ',-400);
+    css(cloud,'translateZ',100);
     css(cloud,'rotateY',0);
     //生成云朵并围成圆柱
     for(let i=0;i<9;i++){
@@ -247,11 +272,11 @@ function anmt7() {
         span.style.backgroundImage = 'url('+imgData.cloud[i%3]+')';
         cloud.appendChild(span);
 
-        let R = 180+ (Math.random()-0.5)*20;  //云朵围成圆柱的半径
+        let R = 280+ (Math.random()-0.5)*20;  //云朵围成圆柱的半径
         let deg = 70*i;  //70 = (180-(360/9))/2
         let x = Math.sin(deg*Math.PI/180)*R;
         let z = Math.cos(deg*Math.PI/180)*R;
-        let y = (Math.random()-0.5)*180;
+        let y = (Math.random()-0.5)*380;
         // css(span,'rotateY',deg*i);  //云朵位移到正确位置，但是不旋转，因为旋转会导致云朵非正面对外
         css(span,'translateZ',z);
         css(span,'translateX',x);
@@ -273,7 +298,7 @@ function anmt7() {
     MTween({
         el:cloud,
         target:{rotateY:540},
-        time:3600,
+        time:2800,
         type:'easeOut',
         callIn:function () {
             let deg = css(cloud,'rotateY');
@@ -282,19 +307,27 @@ function anmt7() {
             }
         },
         callBack:function () {
-            cloud.parentNode.removeChild(cloud);  //云朵旋转完成后就消失，进入主画面
-            redBgAppear();
+            MTween({
+                el:cloud,
+                target:{opacity:0},
+                time:100,
+                type:'easeOut',
+                callBack:function () {
+                    cloud.parentNode.removeChild(cloud);  //云朵旋转完成后就消失，进入主画面
+                    redBgAppear();
+                }
+            })
         }
-    })
+    });
 }
 
 //左右、上下拖拽圆柱、漂浮层旋转对应角度
 function setdrag() {
     let bgSpanBox = document.querySelector('#bgSpanBox');
     let panoBox = document.querySelector('#panoBox');
+    let tZ = document.querySelector('#tZ');
 
-    let translateZ = document.querySelector('#translateZ');
-    let startZ = css(translateZ,'translateZ');
+    let startZ = -160;
     let origin = {x:0,y:0};
     let originDeg = {x:0,y:0};
     let scale = {x:18/129,y:60/1170};  //一个图片宽129，对应18deg，高1170，对应90
@@ -311,6 +344,9 @@ function setdrag() {
 
     function start(ev) {
         window.isTouch = true;  //开始手指拖拽的时候不让陀螺仪旋转
+        clearInterval(bgSpanBox.timer);
+        clearInterval(panoBox.timer);
+        clearInterval(tZ.timer);
         origin.x = ev.changedTouches[0].pageX;  //初始位置
         origin.y = ev.changedTouches[0].pageY;
         originDeg.x = css(bgSpanBox,'rotateY');  //初始旋转角度
@@ -320,24 +356,24 @@ function setdrag() {
         let dis = {};
         let nowdeg = {};  //圆柱旋转到的角度
         let nowdeg2 = {};  //漂浮层旋转到的角度
-        dis['x'] = ev.changedTouches[0].pageX - origin.x;  //移动的距离
-        dis['y'] = ev.changedTouches[0].pageY - origin.y;
+        dis.x = ev.changedTouches[0].pageX - origin.x;  //移动的距离
+        dis.y = ev.changedTouches[0].pageY - origin.y;
 
         nowdeg.x = originDeg.x-dis.x*scale.x;  //水平方向应该旋转到的角度
         nowdeg.y = originDeg.y+dis.y*scale.y;  //竖直方向应该旋转到的角度
-        if(nowdeg.y>40){
-            nowdeg.y = 40;
-        }else if(nowdeg.y<-40){  //控制y轴移动角度不要太多
-            nowdeg.y = -40;
-        }
         nowdeg2.x = originDeg.x-dis.x*scale.x*0.95;
         nowdeg2.y = originDeg.y+dis.y*scale.y*0.95;
-        if(nowdeg2.y>40){
-            nowdeg2.y = 40;
-        }else if(nowdeg2.y<-40){  //控制y轴移动角度不要太多
-            nowdeg2.y = -40;
+
+        if(nowdeg.y>45){
+            nowdeg.y = 45;
+        }else if(nowdeg.y<-45){  //控制y轴移动角度不要太多
+            nowdeg.y = -45;
         }
-        console.log(nowdeg,nowdeg2);
+        if(nowdeg2.y>45){
+            nowdeg2.y = 45;
+        }else if(nowdeg2.y<-45){  //控制y轴移动角度不要太多
+            nowdeg2.y = -45;
+        }
 
         lastDegDis.x = nowdeg.x - lastDeg.x;
         lastDegDis.y = nowdeg.y - lastDeg.y;
@@ -350,33 +386,37 @@ function setdrag() {
         css(panoBox,'rotateX',nowdeg2.y);
 
         //回弹效果，move时往后移动，移动距离与手指滑动距离相关，左滑右滑都是向后移动，所以减去绝对值
-        let zMove = Math.min(Math.abs(dis.x),300);
-        css(translateZ,'translateZ',startZ-zMove);
+        let zMove = Math.max(Math.abs(dis.x),Math.abs(dis.y));
+        if(zMove>200){
+            zMove = 200;
+        }
+        // console.log(zMove);
+        css(tZ,'translateZ',startZ-zMove);
     }
     function end(ev) {
         let nowDeg = {x:css(bgSpanBox,'rotateY'),y:css(bgSpanBox,'rotateX')};
         MTween({
+            el:tZ,
+            target:{translateZ: -160},
+            time:200,
+            type:'easeOut'
+        });
+        MTween({
             el:bgSpanBox,
-            target:{rotateY:nowDeg.x+lastDegDis.x*10,rotateX:nowDeg.y+lastDegDis.y*10},
+            target:{rotateY:nowDeg.x+lastDegDis.x*10},
             time:800,
             type:'easeOut',
             callBack:function () {
                 window.isTouch = false;
+                window.isStart = true;
             }
         });
         MTween({
             el:panoBox,
-            target:{rotateY:nowDeg.x+lastDegDis.x*10,rotateX:nowDeg.y+lastDegDis.y*10},
+            target:{rotateY:nowDeg.x+lastDegDis.x*10},
             time:800,
             type:'easeOut'
         });
-        MTween({
-            el:translateZ,
-            target:{translateZ: startZ},
-            time:700,
-            type:'easeOut'
-        })
-
     }
 }
 
@@ -385,47 +425,90 @@ function setSensors() {
     let bgSpanBox = document.querySelector('#bgSpanBox');
     let panoBox = document.querySelector('#panoBox');
 
-    let isStart = true;
-    let lastX = 0;
-    let lastY = 0;
     let startDeg = {};
     let initElDeg = {};
+    let lastTime = +new Date;
+
+    // window.isTouch = false;
 
     window.addEventListener('deviceorientation',function (ev) {
-        if(window.isTouch) return;
+        if(window.isTouch){
+            return;
+        }
         let x = ev.beta;
         let y = ev.gamma;
-        if(isStart){
+        var nowTime = Date.now();
+        if(nowTime-lastTime<30){
+            return;
+        }
+        lastTime = nowTime;
+        if(window.isStart){
             //start
             initElDeg.x = css(bgSpanBox,'rotateX');
             initElDeg.y = css(bgSpanBox,'rotateY');
             startDeg.x = x;
             startDeg.y = y;
-            isStart = false;
+            window.isStart = false;
         }else{
             //move
-            if(Math.abs(x-lastX)>1 || Math.abs(y-lastY)>1){
-                let dis = {};
-                dis.x = x - startDeg.x;
-                dis.y = y -startDeg.y;
+            let dis = {};
+            dis.x = x - startDeg.x;
+            dis.y = y -startDeg.y;
 
-                let degTo = {};
-                degTo.x = initElDeg.x+dis.x;
-                degTo.y = initElDeg.y+dis.y;
-                if(degTo.x>45){
-                    degTo.x = 45;
-                }else if(degTo.x<-45){
-                    degTo.x = -45;
-                }
-
-                css(bgSpanBox,'rotateX',degTo.x);
-                css(bgSpanBox,'rotateY',degTo.y);
-                css(panoBox,'rotateX',degTo.x);
-                css(panoBox,'rotateY',degTo.y);
-
-                lastX = x;
-                lastY = y;
+            let degTo = {};
+            degTo.x = initElDeg.x+dis.x;
+            degTo.y = initElDeg.y+dis.y;
+            if(degTo.x>45){
+                degTo.x = 45;
+            }else if(degTo.x<-45){
+                degTo.x = -45;
             }
+                
+            let scale = 129/18;
+            let startZ = -160;
+            let disXZ = (degTo.x - css(panoBox,'rotateY'))*scale;
+            let disYZ = (degTo.y - css(panoBox,'rotateX'))*scale;
+            let disZ = Math.max( Math.abs(disXZ) , Math.abs(disYZ) );
+            if(disZ>200){
+                disZ = 200;
+            }
+            //陀螺仪的回弹效果
+            // MTween({
+            //     el:tZ,
+            //     target:{
+            //         translateZ:-160-disZ
+            //     },
+            //     time:200,
+            //     type:'easeOut',
+            //     callBack:function () {
+            //         MTween({
+            //             el:tZ,
+            //             target:{
+            //                 translateZ:-160
+            //             },
+            //             time:300,
+            //             type:'easeOut'
+            //         })
+            //     }
+            // });
+            MTween({
+                el:bgSpanBox,
+                target:{
+                    rotateX:degTo.x,
+                    rotateY:degTo.y
+                },
+                time:800,
+                type:'easeOut'
+            });
+            MTween({
+                el:panoBox,
+                target:{
+                    rotateX:degTo.x,
+                    rotateY:degTo.y
+                },
+                time:800,
+                type:'easeOut'
+            });
         }
     })
 }
@@ -433,7 +516,12 @@ function setSensors() {
 //背景出现
 function redBgAppear() {
     const redBg = document.getElementById('redBg');
-    redBg.style.display = 'block';
+    MTween({
+        el:redBg,
+        target:{opacity:100},
+        time:1000,
+        type:"easeBoth"
+    });
 }
 
 //漂浮层出现
@@ -465,7 +553,7 @@ function floatAppear() {
             time:1200,
             type:'easeBoth'
         })
-    },2800)
+    },2400)
 
     function creatPano(count,x,y,z,startDeg,height) {
         let div = document.createElement('div');
