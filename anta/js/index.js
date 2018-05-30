@@ -8,7 +8,7 @@
 //阻止橡皮筋效果
 document.addEventListener('touchstart', function (e) {
     e.preventDefault();
-}, {passive: false});  //passive 参数不能省略，用来兼容ios和android
+});
 
 //计算景深
 function setPres() {
@@ -206,6 +206,7 @@ function anmt5() {
     anmt7();  //2800云朵出场
     anmt6();  //3600圆柱出场
     floatAppear();  //3600漂浮层出场
+    dotAppear();
     MTween({
         el:tZ,
         target:{translateZ:-160},
@@ -254,9 +255,8 @@ function anmt6() {
         callBack:function(){
             setdrag();
             setTimeout(function () {
-                window.isStart = true;
                 setSensors();
-            },1000)
+            },1000);
         }
     })
 }
@@ -323,9 +323,10 @@ function anmt7() {
 
 //左右、上下拖拽圆柱、漂浮层旋转对应角度
 function setdrag() {
-    let bgSpanBox = document.querySelector('#bgSpanBox');
-    let panoBox = document.querySelector('#panoBox');
-    let tZ = document.querySelector('#tZ');
+    const bgSpanBox = document.querySelector('#bgSpanBox');
+    const panoBox = document.querySelector('#panoBox');
+    const dotBox = document.getElementById('dotBox');
+    const tZ = document.querySelector('#tZ');
 
     let startZ = -160;
     let origin = {x:0,y:0};
@@ -342,10 +343,15 @@ function setdrag() {
     panoBox.addEventListener('touchmove',move);
     panoBox.addEventListener('touchend',end);
 
+    dotBox.addEventListener('touchstart',start);
+    dotBox.addEventListener('touchmove',move);
+    dotBox.addEventListener('touchend',end);
+
     function start(ev) {
         window.isTouch = true;  //开始手指拖拽的时候不让陀螺仪旋转
         clearInterval(bgSpanBox.timer);
         clearInterval(panoBox.timer);
+        clearInterval(dotBox.timer);
         clearInterval(tZ.timer);
         origin.x = ev.changedTouches[0].pageX;  //初始位置
         origin.y = ev.changedTouches[0].pageY;
@@ -384,6 +390,8 @@ function setdrag() {
         css(bgSpanBox,'rotateX',nowdeg.y);
         css(panoBox,'rotateY',nowdeg2.x);
         css(panoBox,'rotateX',nowdeg2.y);
+        css(dotBox,'rotateY',nowdeg2.x);
+        css(dotBox,'rotateX',nowdeg2.y);
 
         //回弹效果，move时往后移动，移动距离与手指滑动距离相关，左滑右滑都是向后移动，所以减去绝对值
         let zMove = Math.max(Math.abs(dis.x),Math.abs(dis.y));
@@ -417,80 +425,121 @@ function setdrag() {
             time:800,
             type:'easeOut'
         });
+        MTween({
+            el:dotBox,
+            target:{rotateY:nowDeg.x+lastDegDis.x*10},
+            time:800,
+            type:'easeOut'
+        });
     }
 }
 
 //陀螺仪
 function setSensors() {
-    let bgSpanBox = document.querySelector('#bgSpanBox');
-    let panoBox = document.querySelector('#panoBox');
+    const bgSpanBox = document.querySelector('#bgSpanBox');
+    const panoBox = document.querySelector('#panoBox');
+    const dotBox = document.getElementById('dotBox');
+    const tZ = document.querySelector('#tZ');
+
+    let dir = window.orientation;  //获取屏幕方向，0为正常，90为逆时针90度，-90为顺时针90度
+    window.onorientationchange = function (ev) {
+        dir = window.orientation;
+    }
 
     let startDeg = {};
     let initElDeg = {};
     let lastTime = +new Date;
 
-    // window.isTouch = false;
+    window.isStart = true;
+    window.isTouch = false;
 
     window.addEventListener('deviceorientation',function (ev) {
         if(window.isTouch){
             return;
         }
-        let x = ev.beta;
-        let y = ev.gamma;
+        let x;
+        let y;
+        switch(dir){
+            case 0:{
+                x = ev.beta;
+                y = ev.gamma;
+                break;
+            }
+            case 90:{
+                x = ev.gamma;
+                y = ev.beta;
+                break;
+            }
+            case -90:{
+                x = -ev.gamma;
+                y = -ev.beta;
+                break;
+            }
+            case 180:{
+                x = -ev.beta;
+                y = -ev.gamma;
+                break;
+            }
+        }
+
+
         var nowTime = Date.now();
-        if(nowTime-lastTime<30){
+        if(nowTime-lastTime<30){  //给运动函数时间运行，否则运动函数一直运行不了
             return;
         }
         lastTime = nowTime;
-        if(window.isStart){
+
+        if(window.isStart){  //第一次走start，获取元素初始位置、初始角度
             //start
             initElDeg.x = css(bgSpanBox,'rotateX');
             initElDeg.y = css(bgSpanBox,'rotateY');
             startDeg.x = x;
             startDeg.y = y;
+
             window.isStart = false;
         }else{
             //move
             let dis = {};
-            dis.x = x - startDeg.x;
+            dis.x = x - startDeg.x;  //陀螺仪旋转了多少度
             dis.y = y -startDeg.y;
 
             let degTo = {};
-            degTo.x = initElDeg.x+dis.x;
-            degTo.y = initElDeg.y+dis.y;
-            if(degTo.x>45){
+            degTo.x = initElDeg.x+dis.x/2;  //要移动到的角度
+            degTo.y = initElDeg.y+dis.y/2;
+            if(degTo.x>45){  //上下翻转角度控制不要太多
                 degTo.x = 45;
             }else if(degTo.x<-45){
                 degTo.x = -45;
             }
-                
+
+            //陀螺仪的回弹效果
             let scale = 129/18;
             let startZ = -160;
-            let disXZ = (degTo.x - css(panoBox,'rotateY'))*scale;
-            let disYZ = (degTo.y - css(panoBox,'rotateX'))*scale;
+            let disXZ = (degTo.x - css(panoBox,'rotateX'))*scale;
+            let disYZ = (degTo.y - css(panoBox,'rotateY'))*scale;
             let disZ = Math.max( Math.abs(disXZ) , Math.abs(disYZ) );
             if(disZ>200){
                 disZ = 200;
             }
-            //陀螺仪的回弹效果
-            // MTween({
-            //     el:tZ,
-            //     target:{
-            //         translateZ:-160-disZ
-            //     },
-            //     time:200,
-            //     type:'easeOut',
-            //     callBack:function () {
-            //         MTween({
-            //             el:tZ,
-            //             target:{
-            //                 translateZ:-160
-            //             },
-            //             time:300,
-            //             type:'easeOut'
-            //         })
-            //     }
-            // });
+            // console.log(css(panoBox,'rotateX'),degTo.x);
+            MTween({
+                el:tZ,
+                target:{
+                    translateZ:startZ-disZ
+                },
+                time:200,
+                type:'easeOut',
+                callBack:function () {
+                    MTween({
+                        el:tZ,
+                        target:{
+                            translateZ:startZ
+                        },
+                        time:300,
+                        type:'easeOut'
+                    })
+                }
+            });
             MTween({
                 el:bgSpanBox,
                 target:{
@@ -502,6 +551,15 @@ function setSensors() {
             });
             MTween({
                 el:panoBox,
+                target:{
+                    rotateX:degTo.x,
+                    rotateY:degTo.y
+                },
+                time:800,
+                type:'easeOut'
+            });
+            MTween({
+                el:dotBox,
                 target:{
                     rotateX:degTo.x,
                     rotateY:degTo.y
@@ -571,7 +629,54 @@ function floatAppear() {
             div.appendChild(span);
             startDeg -= 18;
         }
+
+        let span = document.createElement('span');
+        span.className = 'dot';
+        css(span,'rotateY',startDeg);
+        css(span,'translateZ',-406);
+        div.appendChild(span);
+
         panoBox.appendChild(div);
     }
 }
 
+//在dots中添加可点击元素
+function dotAppear() {
+    const dotBox = document.getElementById('dotBox');
+    css(dotBox,'rotateX',0);
+    css(dotBox,'rotateY',-180);
+    css(dotBox,'scale',0);
+
+    setTimeout(function () {
+        MTween({
+            el:dotBox,
+            target:{rotateY:25,scale:100},
+            time:1200,
+            type:'easeBoth'
+        })
+    },2400)
+
+    const content1 = document.getElementById('content1');
+    let dot1 = document.createElement('a');
+    dot1.className = 'dot';
+    css(dot1,"translateZ",-380);
+    css(dot1,"translateX",0);
+    css(dot1,"translateY",0);
+    dot1.onclick = function () {
+        content1.style.display = 'block';
+    }
+
+    dotBox.appendChild(dot1);
+    close();
+}
+
+//点击关闭弹框
+function close() {
+    const closes = Array.from(document.querySelectorAll('.close'));
+    console.log(closes);
+    closes.forEach(e=>{
+        e.onclick = function (ev) {
+            this.parentNode.parentNode.style.display = 'none';
+        }
+    })
+}
